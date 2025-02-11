@@ -1,0 +1,123 @@
+<ion-header [translucent]="true">
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-button (click)="togglePlay()">
+                <ion-icon [name]="paused ? 'play' : 'pause'"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+        <ion-title>
+            <ion-range min="0" #range [max]="currentSong?.length" [value]="trackProgress"
+                       (ionChange)="sliderChanged(range.value)"
+                       (touchstart)="stopProgressChange()" (click)="setTrackProgress(range.value)"></ion-range>
+        </ion-title>
+        <ion-buttons slot="end">
+            <ion-button (click)="openMenu($event)">
+                <ion-icon name="ellipsis-vertical"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+    @if (refreshing) {
+        <ion-progress-bar [type]="refreshProgress === 0 ? 'indeterminate' : 'determinate'"
+                      [value]="refreshProgress"></ion-progress-bar>
+    }
+</ion-header>
+
+<ion-content [fullscreen]="true">
+    <div class="container">
+        <div class="filter">
+            <mat-form-field appearance="outline">
+                <mat-label>Interpret</mat-label>
+                <input #artistInput
+                       #artistTrigger="matAutocompleteTrigger"
+                       type="text"
+                       matInput
+                       aria-label="Artist"
+                       [matAutocomplete]="artistAuto" [formControl]="artistControl">
+                <mat-autocomplete #artistAuto="matAutocomplete">
+                    @for (artist of datasource.getArtists(artistControl.value); track $index) {
+                        <mat-option [value]="artist"
+                        (click)="selectOption(artistInput)">
+                            {{artist}}
+                        </mat-option>
+                    }
+                </mat-autocomplete>
+                <ion-icon matSuffix name="close"
+                          (click)="clear(artistTrigger, artistControl, $event)"></ion-icon>
+
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+                <mat-label>Genre</mat-label>
+                <input #genreField
+                       #genreTrigger="matAutocompleteTrigger"
+                       type="text"
+                       matInput
+                       aria-label="Genre"
+                       [matAutocomplete]="genreAuto" [formControl]="genreControl">
+                <mat-autocomplete #genreAuto="matAutocomplete">
+                    @for (genre of datasource.getGenres(genreControl.value); track $index) {
+                        <mat-option [value]="genre"
+                        (click)="selectOption(genreField)">
+                            {{genre}}
+                        </mat-option>
+                    }
+                </mat-autocomplete>
+                <ion-icon matSuffix name="close" (click)="clear(genreTrigger, genreControl, $event)"></ion-icon>
+            </mat-form-field>
+            <ion-range #bpm dual-knobs pin color="dark" [min]="datasource.bpmMin" [max]="datasource.bpmMax"
+                       [value]="bpmRange" (ionChange)="bpmChanged(bpm.value)" (touchstart)="startBpmFilter()">
+                <ion-icon slot="start" size="small" name="speedometer-outline"></ion-icon>
+                <ion-icon slot="end" name="speedometer"></ion-icon>
+            </ion-range>
+        </div>
+
+        @if (datasource.refreshing) {
+            <ion-spinner></ion-spinner>
+        }
+        <div class="table-div">
+            <table mat-table [dataSource]="datasource" matSort
+                   class="mat-elevation-z8">
+
+                <ng-container matColumnDef="artist">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                        Interpret
+                    </th>
+                    <td mat-cell *matCellDef="let element"> {{element.artist}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Titel</th>
+                    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="bpm">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> BPM</th>
+                    <td mat-cell *matCellDef="let element"> {{element.bpm}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="genre">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Genre</th>
+                    <td mat-cell *matCellDef="let element"> {{element.genre}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="length">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Länge</th>
+                    <td mat-cell *matCellDef="let element"> {{element.length | length}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="album">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Album</th>
+                    <td mat-cell *matCellDef="let element"> {{element.album}} </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="datasource.columns"></tr>
+                <tr mat-row *matRowDef="let row; columns: datasource.columns;" (click)="play(row.index)"
+                    class="ion-activatable ripple" [class.selected]="row.playing" [hidden]="datasource.refreshing">
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+
+</ion-content>

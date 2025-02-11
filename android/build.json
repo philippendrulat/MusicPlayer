@@ -1,0 +1,11 @@
+{
+    "android": {
+        "release": {
+            "keystore": "./endrulat.keystore",
+            "storePassword": "787R7a9fEswPratX",
+            "alias": "endrulat",
+            "password": "787R7a9fEswPratX",
+            "keystoreType": "jks"
+        }
+    }
+}

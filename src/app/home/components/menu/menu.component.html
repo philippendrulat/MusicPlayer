@@ -1,0 +1,11 @@
+<ion-list>
+    <ion-item (click)="select('addFolder')">Ordner Hinzufügen</ion-item>
+    <ion-item (click)="select('removeFolder')">Ordner Entfernen</ion-item>
+    <ion-item (click)="select('refresh')">Aktualisieren</ion-item>
+    <ion-item (click)="select('rowCountChange')">Angezeigte Elemente</ion-item>
+    <ion-item (click)="select('reset')">Alles Löschen</ion-item>
+    @if (current !== total) {
+        <ion-item>Derzeitiger Fortschritt: {{current + '/' + total}}</ion-item>
+    }
+</ion-list>
+

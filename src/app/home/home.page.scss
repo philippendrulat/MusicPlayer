@@ -1,0 +1,53 @@
+
+.container {
+    height: 100%;
+
+    .filter {
+        display: flex;
+        flex-flow: column;
+        padding: 10px;
+
+        ::ng-deep {
+            .mat-form-field-wrapper {
+                padding-bottom: 5px;
+            }
+
+            .mat-form-field-suffix {
+                top: 0;
+            }
+        }
+    }
+
+    ion-spinner {
+        margin: auto;
+    }
+
+    .table-div {
+        overflow-x: scroll;
+
+        table {
+            min-width: 1000px;
+
+            .ripple {
+                background-position: center;
+                transition: background 0.8s;
+            }
+
+            .ripple.selected {
+                background: transparent radial-gradient(circle, var(--ion-color-secondary) 1%, transparent 1%) center/15000%;
+                color: var(--ion-color-secondary-contrast)
+            }
+
+            .ripple:active {
+                background-size: 100%;
+            }
+
+            td, th {
+                padding: 0 1px;
+            }
+
+        }
+    }
+
+}
+

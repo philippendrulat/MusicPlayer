@@ -1,0 +1,33 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>
+            Ordner auswählen
+        </ion-title>
+        <ion-buttons slot="start">
+            <ion-button (click)="goUp()">
+                <ion-icon name="chevron-up-outline"></ion-icon>
+            </ion-button>
+            <ion-button (click)="select()">
+                <ion-icon name="checkmark-outline"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+            <ion-button (click)="cancel()">
+                <ion-icon name="close"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+    <ion-list>
+        @for (item of items; track $index) {
+            <ion-item (click)="item.type === 'file' ? '' : goDown(item)">
+                <ion-icon slot="start" [name]="item.type === 'file' ? 'document-outline' : 'folder-open-outline'"></ion-icon>
+                <ion-label>{{item.name}}</ion-label>
+            </ion-item>
+        }
+    </ion-list>
+
+</ion-content>

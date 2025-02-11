@@ -1,0 +1,16 @@
+<ion-header>
+    <ion-title>
+        Angezeigte Songs
+    </ion-title>
+</ion-header>
+<ion-content>
+    <mat-form-field appearance="outline">
+        <mat-label>Anzahl</mat-label>
+        <input #count matInput type="number" [value]="rowCount" (change)="rowCount = count.value">
+    </mat-form-field>
+    <ion-buttons>
+        <ion-button (click)="cancel()" slot="start">Abbrechen</ion-button>
+        <ion-button (click)="select()" slot="end">Ändern</ion-button>
+    </ion-buttons>
+</ion-content>
+
