@@ -2,23 +2,12 @@ import {Song} from 'src/app/home/Song';
 import {Injectable} from '@angular/core';
 import {Storage} from '@ionic/storage';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import {SongFinder} from "../plugin/song-finder";
 
 @Injectable({providedIn: 'root'})
 export class StorageService {
-    private locationsFileName = 'locations.js';
-    private songsFileName = 'songs.js';
-    private readonly initiated: Promise<void>;
 
-    public constructor(private storage: Storage) {
-        this.initiated = this.init().then(async () => {
-            await storage.create();
-        });
-    }
-
-    private async init() {
-        return new Promise<void>(resolve => {
-            document.addEventListener('deviceready', () => resolve());
-        });
+    public constructor() {
     }
 
     public async listDir(path: string, dirName: string){
@@ -88,87 +77,37 @@ export class StorageService {
         });
     }
 
-    private async writeFile(name: string, dataObj: any[]): Promise<void> {
-        await this.initiated;
-        await Filesystem.writeFile({
-            data: JSON.stringify(dataObj),
-            path: name,
-            directory: Directory.Data
-        });
-        /*
-        return new Promise((resolve, reject) => {
-            this.file.resolveDirectoryUrl(this.file.applicationStorageDirectory).then(dirEntry => {
-                this.file.getFile(dirEntry as DirectoryEntry, name, {create: true}).then(fileEntry => {
-                    fileEntry.createWriter((fileWriter) => {
-
-                        fileWriter.onwriteend = () => {
-                            resolve();
-                        };
-
-                        fileWriter.onerror = (e) => {
-                            reject(e);
-                        };
-
-                        fileWriter.write(JSON.stringify(dataObj));
-                    });
-                });
-            }, error => reject(error));
-        });*/
-    }
-
-    private async readFile(name: string): Promise<any[]> {
-        await this.initiated;
-        return Filesystem.readFile({
-            path: name,
-            directory: Directory.Data
-        }).then(file => {
-            return JSON.parse(file.data as string);
-        })
-        /*
-        return new Promise((resolve, reject) => {
-            this.file.resolveDirectoryUrl(this.file.applicationStorageDirectory).then(dirEntry => {
-                this.file.getFile(dirEntry as DirectoryEntry, name, {create: true}).then(fileEntry => {
-                    fileEntry.file((file) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            const result = reader.result as string || '[]';
-                            resolve(JSON.parse(result));
-                        };
-
-                        reader.readAsText(file);
-
-                    }, error => reject(error));
-                });
-            }, error => reject(error));
-        });*/
-    }
-
     public async getMusicLocations(): Promise<string[]> {
-        return this.readFile(this.locationsFileName);
+        const locationString = localStorage.getItem('musicLocations');
+        if (!locationString) {
+          return [];
+        }
+        return JSON.parse(locationString);
     }
 
     public async setMusicLocations(locations: string[]) {
-        return this.writeFile(this.locationsFileName, locations);
+        localStorage.setItem('musicLocations', JSON.stringify(locations));
     }
 
     public async setSongs(songs: Song[]) {
-        return this.writeFile(this.songsFileName, songs);
+        localStorage.setItem('songs', JSON.stringify(songs));
     }
 
     public async getSongs(): Promise<Song[]> {
-        return this.readFile(this.songsFileName).catch(async e => {
-            await this.writeFile(this.songsFileName, []);
-            return [];
-        });
+      const songString = localStorage.getItem('songs');
+      if (!songString) {
+        return [];
+      }
+      return JSON.parse(songString);
     }
 
     public async getRowCount(): Promise<number> {
-        await this.initiated;
-        return (await this.storage.get('shownElements')) || 50;
+        const rowCount = localStorage.getItem('rowCount');
+        if (!rowCount) {return 50};
+        return parseInt(rowCount, 10);
     }
 
     public async setRowCount(rowCount: number) {
-        await this.initiated;
-        await this.storage.set('shownElements', rowCount);
+        localStorage.setItem('rowCount', '' + rowCount);
     }
 }
