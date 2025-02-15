@@ -78,11 +78,7 @@ export class StorageService {
     }
 
     public async getMusicLocations(): Promise<string[]> {
-        const locationString = localStorage.getItem('musicLocations');
-        if (!locationString) {
-          return [];
-        }
-        return JSON.parse(locationString);
+        return ['root'];
     }
 
     public async setMusicLocations(locations: string[]) {

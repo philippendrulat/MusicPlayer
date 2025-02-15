@@ -3,15 +3,18 @@ import {Injectable} from '@angular/core';
 import {Song} from 'src/app/home/Song';
 import {BehaviorSubject} from 'rxjs';
 import {Entry, File, FileEntry, Metadata} from '@awesome-cordova-plugins/file/ngx';
-import * as mm from 'music-metadata-browser';
 import {BackgroundMode} from '@awesome-cordova-plugins/background-mode/ngx';
+import {ISong, SongFinder} from "../plugin/song-finder";
+import {FileReader} from "@awesome-cordova-plugins/file";
+import {SongFinderWeb} from "../plugin/song-finder/web";
+import * as mm from 'music-metadata';
 
 class WorkerFiles {
-    private workingFilesTotal: { location: string, file: FileEntry }[] = [];
-    private workingFilesCurrent: { location: string, file: FileEntry }[] = [];
+    private workingFilesTotal: { location: string, file: ISong }[] = [];
+    private workingFilesCurrent: { location: string, file: ISong }[] = [];
     private pointer = 0;
 
-    public addLocation(location: string, files: FileEntry[]) {
+    public addLocation(location: string, files: ISong[]) {
         files.forEach(file => this.workingFilesTotal.push({location, file}));
         files.forEach(file => this.workingFilesCurrent.push({location, file}));
     }
@@ -138,7 +141,7 @@ export class SongService {
         this.workingFiles.removeLocation(location);
         locations.splice(locations.findIndex(loc => loc === location), 1);
         await this.storage.setMusicLocations(locations);
-        const files = await this.getFilesWithPermission(decodeURIComponent(decodeURI(location)));
+        const files = await this.getAllSongFiles();;
         SongService.arrayRemoveIf(this.songsSubject.value, (song) => !!files.find(file => file.nativeURL === song.location));
         this.songsSubject.next(this.songsSubject.value);
         this.storage.setSongs(this.songsSubject.value);
@@ -162,7 +165,7 @@ export class SongService {
                 const existingSongIndex = currentSongs.findIndex(song => song.location === file!.nativeURL);
                 const existingSong = currentSongs[existingSongIndex];
                 if (existingSong) {
-                    const metadata = await this.getMetadata(file);
+                    const metadata = file.metadata
                     if (metadata.modificationTime.getTime() > existingSong.modificationTime.getTime()) {
                         const songMetadata = await this.parseFile(file);
                         currentSongs.splice(existingSongIndex, 1, new Song(songMetadata, file.nativeURL, metadata.modificationTime));
@@ -171,7 +174,7 @@ export class SongService {
                 } else {
                     const metadata = await this.parseFile(file);
                     console.log('added', metadata.common.title, this.workingFiles.processedSize, this.workingFiles.totalSize)
-                    const fileMetadata = await this.getMetadata(file);
+                    const fileMetadata = file.metadata;
                     this.addSong(new Song(metadata, file.nativeURL, fileMetadata.modificationTime));
                 }
                 this.refreshProgressSubject.next(this.workingFiles.processedSize / this.workingFiles.totalSize);
@@ -188,8 +191,7 @@ export class SongService {
 
     private async refreshLocation(location: string) {
         try {
-
-            const files = await this.getFilesWithPermission(decodeURIComponent(decodeURI(location)));
+            const files = await SongFinder.list();
             this.workingFiles.addLocation(location, files);
             this.processFiles().catch(error => console.error(error));
         } catch (e) {
@@ -197,32 +199,25 @@ export class SongService {
         }
     }
 
-    private getMetadata(file: FileEntry): Promise<Metadata> {
-        return new Promise((resolve, reject) => {
-            file.getMetadata(resolve, reject);
-        });
+    private async parseFile(file: ISong): Promise<mm.IAudioMetadata> {
+        const blob = await fetch(file.nativeURL).then(res => res.blob());
+        return mm.parseBlob(blob);
     }
 
-    private parseFile(file: FileEntry): Promise<mm.IAudioMetadata> {
-        return new Promise<mm.IAudioMetadata>((resolve, reject) => {
-            file.file(async blob => {
-                mm.parseBlob(blob)
-                    .then(result => resolve(result))
-                    .catch(err => reject(err));
-            }, error => reject(error));
-        });
+    private getAllSongFiles(): Promise<ISong[]> {
+      return SongFinder.list();
     }
 
-    private getFilesWithPermission(dir: string): Promise<FileEntry[]> {
-        return new Promise<FileEntry[]>((resolve, reject) => {
-            const permissions = (window as any).cordova.plugins.permissions;
-            permissions.requestPermission(
-                permissions.MANAGE_EXTERNAL_STORAGE,
-                () => resolve(this.getFiles(dir)),
-                (error: any) => reject(error)
-            );
-        });
-    }
+    // private getFilesWithPermission(dir: string): Promise<FileEntry[]> {
+    //     return new Promise<FileEntry[]>((resolve, reject) => {
+    //         const permissions = (window as any).cordova.plugins.permissions;
+    //         permissions.requestPermission(
+    //             permissions.MANAGE_EXTERNAL_STORAGE,
+    //             () => resolve(this.getFiles(dir)),
+    //             (error: any) => reject(error)
+    //         );
+    //     });
+    // }
 
     private async getFiles(dir: string, foundFiles: FileEntry[] = []): Promise<FileEntry[]> {
         let entries: Entry[];
