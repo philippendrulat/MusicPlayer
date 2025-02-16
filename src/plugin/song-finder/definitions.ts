@@ -1,12 +1,14 @@
 export interface SongFinderPlugin {
-    list(): Promise<ISong[]>;
+    list(): Promise<{files: ISong[]}>;
 }
 
 export interface ISong {
     nativeURL: string;
-    metadata: Metadata;
-}
-
-export interface Metadata extends Record<string, any> {
-  modificationTime: Date;
+    modificationTime: number;
+    mimetype: string;
+    album: string;
+    artist: string;
+    length: number;
+    title: string;
+    genre?: string[];
 }

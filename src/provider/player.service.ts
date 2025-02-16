@@ -83,17 +83,17 @@ export class PlayerService {
         const song = this.playlist[this.index];
         this.playingSubject.next(song);
         await NativeAudio.preload({
-            assetId: song.location,
-            assetPath: song.location,
+            assetId: song.nativeURL,
+            assetPath: song.nativeURL,
             isUrl: true
         });
         try {
             // stop previous track
             this.stopCurrentSong();
-            this.currentMedia = song.location;
+            this.currentMedia = song.nativeURL;
             if (!this.pausedSubject.value) {
                 NativeAudio.play({
-                    assetId: song.location
+                    assetId: song.nativeURL
                 })
             }
             this.currentMediaSubscription = await NativeAudio.addListener("complete", () => {

@@ -90,10 +90,6 @@ export class HomePage implements AfterViewInit {
         this.datasource.sort = this.sort;
     }
 
-    public async selectFolder() {
-        await this.songService.addMusicLocation();
-    }
-
     public play(index: number) {
         setTimeout(() => {
             this.player.play(this.datasource.songs, index);
@@ -151,18 +147,14 @@ export class HomePage implements AfterViewInit {
         const popover = await this.popoverCtrl.create({
             component: MenuComponent,
             componentProps: {
-                current: this.songService.workingFiles.processedSize,
-                total: this.songService.workingFiles.totalSize
+                current: this.songService.processedSongs,
+                total: this.songService.totalSongs
             },
             event
         });
         await popover.present();
         const result = await popover.onDidDismiss();
         switch (result.data) {
-            case 'addFolder':
-                return this.selectFolder();
-            case 'removeFolder':
-                return this.removeFolder();
             case 'refresh':
                 return this.songService.refreshAll();
             case 'reset':
@@ -196,19 +188,6 @@ export class HomePage implements AfterViewInit {
             default:
                 console.log(result.data);
         }
-    }
-
-    private async removeFolder() {
-        const sheet = await this.actionSheetController.create({
-            header: 'Ordner',
-            buttons: (await this.songService.getMusicLocations()).map(location => ({
-                text: location,
-                handler: () => {
-                    return this.songService.removeMusicLocation(location);
-                }
-            }))
-        });
-        await sheet.present();
     }
 
     public togglePlay() {

@@ -1,31 +1,23 @@
-import * as mm from 'music-metadata';
+import {ISong} from "../../plugin/song-finder";
 
 export class Song {
+    public readonly album;
+    public readonly artist;
+    public readonly name;
+    public readonly length;
+    public readonly modificationTime;
+    public readonly mimetype;
+    public readonly nativeURL;
+    public readonly genre;
 
-    public constructor(public metadata: mm.IAudioMetadata, public readonly location: string, public readonly modificationTime: Date) {
-    }
-
-    public get artist() {
-        return this.metadata.common.artist
-    }
-
-    public get album() {
-        return this.metadata.common.album;
-    }
-
-    public get name() {
-        return this.metadata.common.title;
-    }
-
-    public get genre() {
-        return this.metadata.common.genre;
-    }
-
-    public get bpm() {
-        return this.metadata.common.bpm ? Math.round(this.metadata.common.bpm) : undefined;
-    }
-
-    public get length() {
-        return this.metadata.format.duration;
+    public constructor(song: ISong, public bpm: number) {
+        this.album = song.album;
+        this.artist = song.artist;
+        this.name = song.title;
+        this.length = song.length / 1000;
+        this.modificationTime = song.modificationTime;
+        this.mimetype = song.mimetype;
+        this.nativeURL = song.nativeURL;
+        this.genre = song.genre || [];
     }
 }

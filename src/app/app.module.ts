@@ -2,9 +2,6 @@ import {NgModule} from '@angular/core';
 import {BrowserModule} from '@angular/platform-browser';
 import {RouteReuseStrategy} from '@angular/router';
 
-import {SplashScreen} from '@awesome-cordova-plugins/splash-screen/ngx';
-import {StatusBar} from '@awesome-cordova-plugins/status-bar/ngx';
-
 import {AppRoutingModule} from './app-routing.module';
 import {HttpClientModule} from '@angular/common/http';
 import {File} from '@awesome-cordova-plugins/file/ngx';
@@ -46,8 +43,6 @@ import { AppComponent } from './app.component';
         ReactiveFormsModule
     ],
     providers: [
-        StatusBar,
-        SplashScreen,
         {provide: RouteReuseStrategy, useClass: IonicRouteStrategy},
         File,
         AndroidPermissions,

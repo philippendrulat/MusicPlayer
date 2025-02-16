@@ -1,10 +1,9 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 
-import { Platform } from '@ionic/angular';
-import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
-import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
-import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
-import { SongFinder } from 'src/plugin/song-finder';
+import {Platform} from '@ionic/angular';
+import {SongFinder} from 'src/plugin/song-finder';
+import {StatusBar, Style} from "@capacitor/status-bar";
+import {SplashScreen} from "@capacitor/splash-screen";
 
 @Component({
   selector: 'app-root',
@@ -14,18 +13,19 @@ import { SongFinder } from 'src/plugin/song-finder';
 })
 export class AppComponent {
   constructor(
-    private platform: Platform,
-    private splashScreen: SplashScreen,
-    private statusBar: StatusBar
+      private platform: Platform,
   ) {
-    this.initializeApp();
+      this.initializeApp();
   }
 
   initializeApp() {
-    this.platform.ready().then(() => {
-      this.statusBar.styleDefault();
-      this.splashScreen.hide();
-      SongFinder.list().then(res => console.log(res));
-    });
+      this.platform.ready().then(() => {
+          if (this.platform.is("android")) {
+              StatusBar.setStyle({style: Style.Default});
+              StatusBar.setOverlaysWebView({overlay: false});
+          }
+          SplashScreen.hide()
+          SongFinder.list().then(res => console.log(res));
+      });
   }
 }

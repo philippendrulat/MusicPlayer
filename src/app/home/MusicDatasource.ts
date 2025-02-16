@@ -3,13 +3,26 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import {Song} from './Song';
 import {MatSort, Sort, SortDirection} from '@angular/material/sort';
 
-export class SongRow extends Song {
+export class SongRow implements Song {
     public playing = false;
 
-    public constructor(song: Song, public readonly index: number) {
-        super(
-            song.metadata,  song.location, song.modificationTime
-        )
+    public constructor(private song: Song, public readonly index: number) {
+    }
+
+    get album() {return this.song.album};
+    get artist() {return this.song.artist};
+    get length() {return this.song.length};
+    get mimetype() {return this.song.mimetype};
+    get modificationTime() {return this.song.modificationTime};
+    get name() {return this.song.name};
+    get nativeURL() {return this.song.nativeURL};
+
+    get bpm(): number {
+        return this.song.bpm;
+    }
+
+    get genre(): string[] {
+        return this.song.genre;
     }
 }
 
@@ -161,7 +174,7 @@ export class MusicDatasource extends DataSource<SongRow> {
     }
 
     public setPlaying(song: Song, playing: boolean) {
-        const songRow = this.data.value.find(s => s.location === song.location);
+        const songRow = this.data.value.find(s => s.nativeURL === song.nativeURL);
         if (songRow) {
             songRow.playing = playing;
         }
