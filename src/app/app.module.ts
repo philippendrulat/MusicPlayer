@@ -12,7 +12,6 @@ import {AndroidPermissions} from '@awesome-cordova-plugins/android-permissions/n
 import {FileChooser} from '@awesome-cordova-plugins/file-chooser/ngx';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {MatTableModule} from '@angular/material/table';
-import {NativeAudio} from '@awesome-cordova-plugins/native-audio/ngx';
 import {Media} from '@awesome-cordova-plugins/media/ngx';
 import {MusicControls} from '@awesome-cordova-plugins/music-controls/ngx';
 import {IonicStorageModule} from '@ionic/storage-angular';
@@ -53,7 +52,6 @@ import { AppComponent } from './app.component';
         File,
         AndroidPermissions,
         FileChooser,
-        NativeAudio,
         Media,
         MusicControls,
         BackgroundMode,

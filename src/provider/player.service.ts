@@ -1,20 +1,21 @@
 import {Injectable} from '@angular/core';
 import {Song} from 'src/app/home/Song';
-import {Media, MEDIA_STATUS, MediaObject} from '@awesome-cordova-plugins/media/ngx';
 import {MusicEvent, MusicNotification} from 'src/app/home/MusicNotification';
-import {BehaviorSubject, Subscription} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
+import {NativeAudio} from '@capacitor-community/native-audio'
+import {PluginListenerHandle} from "@capacitor/core";
 
 @Injectable({providedIn: 'root'})
 export class PlayerService {
     private playlist: Song[] = [];
     private index = 0;
-    private currentMedia?: MediaObject;
+    private currentMedia?: string;
     private pausedSubject = new BehaviorSubject<boolean>(true);
     private playingSubject = new BehaviorSubject<Song | undefined>(undefined);
     private trackProgressSubject = new BehaviorSubject<number>(0);
-    private currentMediaSubscription?: Subscription;
+    private currentMediaSubscription?: PluginListenerHandle;
 
-    constructor(private media: Media, private notification: MusicNotification) {
+    constructor(private notification: MusicNotification) {
         this.notification.control$.subscribe(next => {
             switch (next) {
                 case MusicEvent.PAUSE:
@@ -36,7 +37,8 @@ export class PlayerService {
         });
         window.setInterval(async () => {
             if (this.currentMedia) {
-                this.trackProgressSubject.next(await this.currentMedia.getCurrentPosition());
+                const currentTime = await NativeAudio.getCurrentTime({assetId: this.currentMedia});
+                this.trackProgressSubject.next(currentTime.currentTime * 1000)
             } else {
                 this.trackProgressSubject.next(0);
             }
@@ -64,32 +66,40 @@ export class PlayerService {
 
     public setTrackProgressInSeconds(seconds: number) {
         if (this.currentMedia) {
-            this.currentMedia.seekTo(seconds * 1000);
+            NativeAudio.play({
+                assetId: this.currentMedia,
+                time: seconds
+            })
         }
     }
 
-    private playTrack() {
+    private async playTrack() {
         if (this.currentMediaSubscription) {
-            this.currentMediaSubscription.unsubscribe();
+            await this.currentMediaSubscription.remove();
         }
         if (!this.playlist[this.index]) {
             this.index = 0;
         }
-        this.playingSubject.next(this.playlist[this.index]);
-        const media = this.media.create(this.playlist[this.index].location);
+        const song = this.playlist[this.index];
+        this.playingSubject.next(song);
+        await NativeAudio.preload({
+            assetId: song.location,
+            assetPath: song.location,
+            isUrl: true
+        });
         try {
             // stop previous track
             this.stopCurrentSong();
-            this.currentMedia = media;
+            this.currentMedia = song.location;
             if (!this.pausedSubject.value) {
-                media.play();
+                NativeAudio.play({
+                    assetId: song.location
+                })
             }
-            this.currentMediaSubscription = media.onStatusUpdate.subscribe(update => {
-                if (update === MEDIA_STATUS.STOPPED) {
-                    this.index++;
-                    this.playTrack();
-                }
-            });
+            this.currentMediaSubscription = await NativeAudio.addListener("complete", () => {
+                this.index++;
+                this.playTrack();
+            })
         } catch (e) {
             console.error(e);
         }
@@ -100,7 +110,7 @@ export class PlayerService {
     private stop() {
 
         if (this.currentMediaSubscription) {
-            this.currentMediaSubscription.unsubscribe();
+            this.currentMediaSubscription.remove();
         }
         this.playingSubject.next(undefined);
         this.stopCurrentSong();
@@ -108,8 +118,8 @@ export class PlayerService {
 
     private stopCurrentSong() {
         if (this.currentMedia) {
-            this.currentMedia.stop();
-            this.currentMedia.release();
+            NativeAudio.stop({assetId: this.currentMedia});
+            NativeAudio.unload({assetId: this.currentMedia});
             this.currentMedia = undefined;
             this.pausedSubject.next(false);
         }
@@ -117,7 +127,7 @@ export class PlayerService {
 
     public async pause() {
         if (this.currentMedia) {
-            this.currentMedia.pause();
+            NativeAudio.pause({assetId: this.currentMedia});
             this.pausedSubject.next(true);
             this.notification.setPaused();
         }
@@ -126,7 +136,7 @@ export class PlayerService {
     public async resume() {
         if (this.currentMedia) {
             this.pausedSubject.next(false);
-            this.currentMedia.play();
+            NativeAudio.resume({assetId: this.currentMedia});
             this.notification.setResumed();
         }
     }
