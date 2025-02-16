@@ -38,7 +38,7 @@ export class PlayerService {
         window.setInterval(async () => {
             if (this.currentMedia) {
                 const currentTime = await NativeAudio.getCurrentTime({assetId: this.currentMedia});
-                this.trackProgressSubject.next(currentTime.currentTime * 1000)
+                this.trackProgressSubject.next(currentTime.currentTime)
             } else {
                 this.trackProgressSubject.next(0);
             }

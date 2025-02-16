@@ -1,4 +1,12 @@
+ion-header {
+    ion-toolbar {
+        margin: 0;
 
+        ion-range {
+            padding: 0 20px;
+        }
+    }
+}
 .container {
     height: 100%;
 

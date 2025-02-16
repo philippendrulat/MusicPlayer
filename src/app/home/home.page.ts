@@ -1,12 +1,10 @@
 import {AfterViewInit, Component, HostListener, NgZone, ViewChild} from '@angular/core';
-import {ActionSheetController, AlertController, ModalController, PopoverController} from '@ionic/angular';
+import {ActionSheetController, AlertController, PopoverController} from '@ionic/angular';
 import {MusicDatasource} from './MusicDatasource';
 import {Song} from './Song';
 import {PlayerService} from 'src/provider/player.service';
-import {Media} from '@awesome-cordova-plugins/media/ngx';
 import {SongService} from 'src/provider/song.service';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {Keyboard} from '@awesome-cordova-plugins/keyboard/ngx';
 import {MenuComponent} from './components/menu/menu.component';
 import {MatAutocompleteModule, MatAutocompleteTrigger} from '@angular/material/autocomplete';
 import {MatSort, MatSortModule} from '@angular/material/sort';
@@ -42,11 +40,8 @@ export class HomePage implements AfterViewInit {
 
     constructor(
         private zone: NgZone,
-        private modal: ModalController,
         private player: PlayerService,
-        private media: Media,
         private songService: SongService,
-        private keyboard: Keyboard,
         private popoverCtrl: PopoverController,
         private actionSheetController: ActionSheetController,
         private alertController: AlertController,
